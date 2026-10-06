@@ -1,0 +1,120 @@
+name: Build Mobile Release (Android & iOS)
+
+on:
+  push:
+    branches:
+      - main
+      - master
+    tags:
+      - 'v*'
+  pull_request:
+    branches:
+      - main
+      - master
+  release:
+    types: [published]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-android:
+    name: Build Android APK
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Java JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '21'
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci || npm install
+
+      - name: Sync Capacitor Android
+        run: npx cap sync android
+
+      - name: Setup Keystore
+        run: |
+          if [ ! -f "android/app/release.keystore" ]; then
+            keytool -genkeypair -v -keystore android/app/release.keystore -alias skarp -keyalg RSA -keysize 2048 -validity 10000 -storepass android123 -keypass android123 -dname "CN=Skarp, OU=App, O=Skarp, L=City, S=State, C=ID"
+          fi
+
+      - name: Build Android APK
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          mkdir -p dist-assets
+          cd android
+          chmod +x gradlew
+          ./gradlew assembleRelease assembleDebug
+          cd ..
+          
+          find android/app/build/outputs/apk/release -name "*.apk" -exec cp {} "dist-assets/Skarp-v${VERSION}-Android-Release.apk" \;
+          find android/app/build/outputs/apk/debug -name "*.apk" -exec cp {} "dist-assets/Skarp-v${VERSION}-Android-Debug.apk" \;
+
+      - name: Upload Android Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: Skarp-Android-APKs
+          path: dist-assets/*.apk
+
+      - name: Upload Release Asset (Android)
+        if: github.event_name == 'release' || startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist-assets/*.apk
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  build-ios:
+    name: Build iOS IPA
+    runs-on: macos-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci || npm install
+
+      - name: Sync Capacitor iOS
+        run: npx cap sync ios
+
+      - name: Build Unsigned iOS IPA
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          xcodebuild -workspace ios/App/App.xcworkspace -scheme App -configuration Release -sdk iphoneos -archivePath build/Skarp.xcarchive archive CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY=""
+          mkdir -p Payload
+          cp -r build/Skarp.xcarchive/Products/Applications/App.app Payload/
+          mkdir -p dist-assets
+          zip -r "dist-assets/Skarp-v${VERSION}-iOS-Unsigned.ipa" Payload
+          rm -rf Payload build
+
+      - name: Upload iOS Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Skarp-iOS-Unsigned-IPA
+          path: dist-assets/*.ipa
+
+      - name: Upload Release Asset (iOS)
+        if: github.event_name == 'release' || startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist-assets/*.ipa
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -1,0 +1,13 @@
+{
+  "appId": "com.skarp.downloader",
+  "appName": "SKARP",
+  "webDir": "public",
+  "plugins": {
+    "CapacitorHttp": {
+      "enabled": true
+    },
+    "CapacitorCookies": {
+      "enabled": true
+    }
+  }
+}

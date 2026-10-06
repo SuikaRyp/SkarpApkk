@@ -1,0 +1,762 @@
+/* Tema "Tabungan" untuk Skarp: neo-brutalism biru.
+   Nilai warna, border, radius, dan bayangan mengikuti theme/Color.kt dan
+   components/Neo*.kt di proyek Tabungan.
+   Dimuat paling akhir lewat style.css dan memakai ulang nama token --rg-*
+   agar file CSS lain ikut berubah. */
+
+/* ---------- Token ---------- */
+:root {
+  /* Palet Tabungan */
+  --tb-blue: #1687ff;
+  --tb-blue-deep: #0756c9;
+  --tb-blue-sky: #6db7ff;
+  --tb-blue-light: #e8f4ff;
+  --tb-bg: #f5f9ff;
+  --tb-surface: #ffffff;
+  --tb-text: #111111;
+  --tb-muted: #606773;
+  --tb-border: #111111;
+  --tb-shadow: #111111;
+  --tb-success: #19b96b;
+  --tb-danger: #ff4d4d;
+  --tb-warning: #ffd84d;
+
+  /* Ukuran Neo* */
+  --tb-bw: 2.5px; /* NeoCard, NeoButton */
+  --tb-bw-sm: 2px; /* NeoTextField, toggle, progress */
+  --tb-off: 5px; /* bayangan besar */
+  --tb-off-sm: 3px; /* bayangan kecil */
+  --tb-r-card: 14px;
+  --tb-r-btn: 12px;
+  --tb-r-field: 10px;
+
+  /* Token --rg-* yang dipakai file CSS lain */
+  --rg-accent: var(--tb-blue);
+  --rg-accent-hi: var(--tb-blue-sky);
+  --rg-ink: var(--tb-text);
+  --rg-ink-2: var(--tb-muted);
+  --rg-fill: var(--tb-surface);
+  --rg-fill-2: var(--tb-blue-light);
+  --rg-fill-inner: var(--tb-surface);
+  --rg-sheen: transparent;
+  --rg-line: var(--tb-border);
+  --rg-line-strong: var(--tb-border);
+  --rg-hair: rgba(17, 17, 17, 0.16);
+  --rg-hl: transparent;
+  --rg-shadow-rgb: 17, 17, 17;
+  --rg-menu-fill: var(--tb-surface);
+  --rg-sheet-fill: var(--tb-surface);
+  --rg-scrim: rgba(17, 17, 17, 0.5);
+  --rg-nav-fill: var(--tb-surface);
+  --rg-blur: 0px;
+  --rg-sat: 100%;
+  --rg-r: var(--tb-r-btn);
+  --rg-r-lg: var(--tb-r-card);
+
+  /* Token dasar Skarp */
+  --bg-color: var(--tb-bg);
+  --bg-rgb: 245, 249, 255;
+  --surface: var(--tb-surface);
+  --surface-rgb: 255, 255, 255;
+  --text-main: var(--tb-text);
+  --text-secondary: var(--tb-muted);
+  --on-primary: #ffffff;
+  --radius-l: var(--tb-r-field);
+  --radius-xl: var(--tb-r-card);
+  /* aksen dari applyColorAccent() (inline style) tidak boleh menang */
+  --primary: var(--tb-blue) !important;
+  --primary-rgb: 22, 135, 255 !important;
+}
+
+/* Tabungan hanya punya tema terang. Varian gelap ini turunan sendiri:
+   garis dan teks terang, bayangan hitam, biru tetap sama. */
+[data-theme="dark"] {
+  --tb-blue-light: #16274a;
+  --tb-bg: #0b1426;
+  --tb-surface: #121f38;
+  --tb-text: #f1f6ff;
+  --tb-muted: #9aa8c2;
+  --tb-border: #e8f4ff;
+  --tb-shadow: #000000;
+
+  --rg-hair: rgba(232, 244, 255, 0.18);
+  --rg-shadow-rgb: 0, 0, 0;
+  --rg-scrim: rgba(0, 0, 0, 0.62);
+  --bg-rgb: 11, 20, 38;
+  --surface-rgb: 18, 31, 56;
+}
+
+/* Preset kaca/blur tidak berlaku di tema ini */
+body.glass-off,
+body.glass-subtle,
+body.glass-deep {
+  --rg-blur: 0px;
+  --rg-sat: 100%;
+  --rg-fill: var(--tb-surface);
+  --rg-fill-inner: var(--tb-surface);
+}
+body.corner-sharp {
+  --tb-r-card: 6px;
+  --tb-r-btn: 5px;
+  --tb-r-field: 4px;
+  --rg-r: var(--tb-r-btn);
+  --rg-r-lg: var(--tb-r-card);
+}
+body.corner-round {
+  --tb-r-card: 22px;
+  --tb-r-btn: 18px;
+  --tb-r-field: 16px;
+  --rg-r: var(--tb-r-btn);
+  --rg-r-lg: var(--tb-r-card);
+}
+
+/* ---------- Latar & tipografi ---------- */
+html {
+  background: var(--tb-bg);
+}
+body {
+  background: var(--tb-bg) !important;
+  color: var(--tb-text);
+}
+body::before {
+  content: none;
+}
+
+body.font-display,
+body.font-default {
+  font-family: "Roboto", "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+@keyframes tbEnter {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+/* nama animasi lama masih dipakai tools.css */
+@keyframes rgEnter {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+:root body[class] .page-content:not(.hidden) {
+  animation: tbEnter 0.25s ease-out both;
+}
+
+/* ---------- Header & sapaan ---------- */
+header h1 {
+  font-size: 1.15rem;
+  font-weight: 900;
+  letter-spacing: 0.2em;
+  text-indent: 0.2em;
+  color: var(--tb-text);
+  margin-bottom: 0;
+}
+.dynamic-greeting {
+  margin: 28px 0 6px;
+}
+.dynamic-greeting #greetingText {
+  font-size: 1.75rem;
+  font-weight: 900;
+  line-height: 1.2;
+  text-transform: none;
+  letter-spacing: -0.5px;
+  opacity: 1;
+}
+.dynamic-greeting #greetingStats {
+  font-size: 0.85rem;
+  font-weight: 500;
+  margin-top: 6px;
+  opacity: 1;
+  color: var(--tb-muted);
+}
+
+/* ---------- Kartu (NeoCard) ---------- */
+:root body[class][class] :is(
+    .media-card,
+    .result-card,
+    .history-item,
+    .settings-list,
+    .settings-menu-item,
+    .skeleton-card,
+    .bg-anim-card,
+    .path-setting-item,
+    .download-bubble-dropup,
+    .tool-card,
+    .tool-card-static,
+    .tool-drop,
+    .tool-status,
+    .empty-state
+  ) {
+  background: var(--tb-surface) !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+  border: var(--tb-bw) solid var(--tb-border) !important;
+  border-radius: var(--tb-r-card) !important;
+  box-shadow: var(--tb-off) var(--tb-off) 0 var(--tb-shadow) !important;
+}
+:root body[class][class] :is(.settings-menu-item, .history-item, .path-setting-item) {
+  border-radius: var(--tb-r-card) !important;
+}
+/* daftar pengaturan dan item riwayat memakai bayangan lebih kecil */
+:root body[class][class] :is(.history-item, .path-setting-item, .tool-status) {
+  box-shadow: var(--tb-off-sm) var(--tb-off-sm) 0 var(--tb-shadow) !important;
+}
+:root body[class][class] .empty-state {
+  background: var(--tb-blue-light) !important;
+}
+
+/* kartu yang bisa ditekan */
+:root body[class][class] :is(.settings-menu-item, .tool-card, .tool-drop, .history-item) {
+  transition:
+    transform 0.08s ease,
+    box-shadow 0.08s ease !important;
+}
+:root body[class][class] :is(.settings-menu-item, .tool-card, .tool-drop):active {
+  transform: translate(var(--tb-off), var(--tb-off)) !important;
+  box-shadow: 0 0 0 var(--tb-shadow) !important;
+}
+.settings-menu-item:hover,
+.tool-card:hover {
+  background-color: var(--tb-blue-light) !important;
+}
+
+/* elemen kecil di dalam kartu: chip, pill, badge */
+:root body[class][class] :is(
+    .custom-select,
+    .path-display-pill,
+    .dbd-item,
+    .menu-icon,
+    .back-btn-settings,
+    .bg-shape-card,
+    .path-preset-chip,
+    .filter-chip,
+    .platform-chip,
+    .badge,
+    .chip
+  ) {
+  background: var(--tb-surface) !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+  border: var(--tb-bw-sm) solid var(--tb-border) !important;
+  border-radius: var(--tb-r-field) !important;
+  box-shadow: var(--tb-off-sm) var(--tb-off-sm) 0 var(--tb-shadow) !important;
+  color: var(--tb-text);
+}
+/* ikon menu: tanpa bayangan supaya tidak ramai */
+:root body[class][class] .menu-icon {
+  background: var(--tb-blue-light) !important;
+  color: var(--tb-blue-deep);
+  box-shadow: none !important;
+}
+:root body[class][class] :is(.path-preset-chip, .filter-chip, .platform-chip, .bg-shape-card, .back-btn-settings) {
+  font-weight: 700;
+  cursor: pointer;
+  transition:
+    transform 0.08s ease,
+    box-shadow 0.08s ease !important;
+}
+:root body[class][class] :is(.path-preset-chip, .filter-chip, .platform-chip, .bg-shape-card, .back-btn-settings):active {
+  transform: translate(var(--tb-off-sm), var(--tb-off-sm)) !important;
+  box-shadow: 0 0 0 var(--tb-shadow) !important;
+}
+/* pilihan aktif = NeoToggleItem terpilih */
+:root body[class][class] :is(.bg-shape-card, .path-preset-chip, .filter-chip, .platform-chip).active {
+  background: var(--tb-blue) !important;
+  border-color: var(--tb-border) !important;
+  color: #fff !important;
+}
+:root body[class][class] .badge {
+  box-shadow: none !important;
+  background: var(--tb-warning) !important;
+  color: #111 !important;
+  border-color: #111 !important;
+}
+
+.settings-item {
+  border-bottom-color: var(--tb-border) !important;
+}
+.settings-section-divider {
+  color: var(--tb-muted);
+}
+
+/* ---------- Input & tombol utama ---------- */
+:root body[class][class] input[type="text"],
+:root body[class][class] .tool-input input[type="text"] {
+  background: var(--tb-surface) !important;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  border: var(--tb-bw-sm) solid var(--tb-border) !important;
+  border-radius: var(--tb-r-field) !important;
+  box-shadow: var(--tb-off-sm) var(--tb-off-sm) 0 var(--tb-shadow) !important;
+  color: var(--tb-text);
+  font-weight: 600;
+}
+:root body[class][class] input[type="text"]:focus {
+  border-color: var(--tb-border) !important;
+  box-shadow: var(--tb-off-sm) var(--tb-off-sm) 0 var(--tb-blue) !important;
+  outline: none;
+}
+input::placeholder,
+textarea::placeholder {
+  color: var(--tb-muted);
+  opacity: 1;
+  font-weight: 500;
+}
+.search-icon,
+.input-action-btn {
+  color: var(--tb-muted);
+}
+.input-action-btn:hover,
+.batch-toggle-btn.active {
+  color: var(--tb-blue);
+}
+.batch-url-textarea {
+  background: var(--tb-surface) !important;
+  border: var(--tb-bw-sm) solid var(--tb-border) !important;
+  border-radius: var(--tb-r-field) !important;
+  box-shadow: var(--tb-off-sm) var(--tb-off-sm) 0 var(--tb-shadow);
+  color: var(--tb-text);
+  font-weight: 600;
+}
+
+/* NeoButton: biru, border tebal, bayangan keras, turun saat ditekan */
+:root body[class][class] :is(#downloadBtn, .tool-btn, .done-btn) {
+  background: var(--tb-blue) !important;
+  color: #fff !important;
+  border: var(--tb-bw) solid var(--tb-border) !important;
+  border-radius: var(--tb-r-btn) !important;
+  font-size: 0.95rem;
+  font-weight: 700;
+  text-transform: none;
+  letter-spacing: 0;
+  box-shadow: var(--tb-off) var(--tb-off) 0 var(--tb-shadow) !important;
+  transition:
+    transform 0.08s ease,
+    box-shadow 0.08s ease;
+}
+#downloadBtn:hover,
+.tool-btn:hover {
+  filter: none;
+}
+:root body[class][class] :is(#downloadBtn, .tool-btn, .done-btn):active {
+  transform: translate(var(--tb-off), var(--tb-off));
+  box-shadow: 0 0 0 var(--tb-shadow) !important;
+}
+:root body[class][class] #downloadBtn.is-cancelling {
+  background: var(--tb-danger) !important;
+  color: #fff !important;
+  border-color: var(--tb-border) !important;
+  box-shadow: var(--tb-off) var(--tb-off) 0 var(--tb-shadow) !important;
+}
+:root body[class][class] .tool-btn:disabled {
+  background: rgba(22, 135, 255, 0.5) !important;
+  box-shadow: var(--tb-off) var(--tb-off) 0 rgba(17, 17, 17, 0.3) !important;
+}
+/* tombol sekunder: putih */
+:root body[class][class] :is(.tool-btn-sec, .dl-all-btn, .pdf-btn, #redownloadBtn, #batchDownloadAllBtn) {
+  background: var(--tb-surface) !important;
+  color: var(--tb-text) !important;
+  border: var(--tb-bw) solid var(--tb-border) !important;
+  border-radius: var(--tb-r-btn) !important;
+  font-weight: 700;
+  box-shadow: var(--tb-off-sm) var(--tb-off-sm) 0 var(--tb-shadow) !important;
+  transition:
+    transform 0.08s ease,
+    box-shadow 0.08s ease;
+}
+:root body[class][class] :is(.tool-btn-sec, .dl-all-btn, .pdf-btn, #redownloadBtn, #batchDownloadAllBtn):active {
+  transform: translate(var(--tb-off-sm), var(--tb-off-sm));
+  box-shadow: 0 0 0 var(--tb-shadow) !important;
+}
+
+.section-label {
+  text-transform: none;
+  letter-spacing: 0;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--tb-muted);
+}
+.chip span {
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+/* NeoSegmentedToggle di halaman alat */
+:root body[class][class] .tool-seg {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  gap: 10px;
+  padding: 0;
+}
+:root body[class][class] .tool-seg button {
+  background: var(--tb-surface) !important;
+  color: var(--tb-text) !important;
+  border: var(--tb-bw-sm) solid var(--tb-border) !important;
+  border-radius: var(--tb-r-field) !important;
+  box-shadow: var(--tb-off-sm) var(--tb-off-sm) 0 var(--tb-shadow) !important;
+  font-weight: 700;
+}
+:root body[class][class] .tool-seg button.active {
+  background: var(--tb-blue) !important;
+  color: #fff !important;
+}
+
+/* ---------- Progres (NeoProgressBar) ---------- */
+.progress-container {
+  height: 14px;
+  background: var(--tb-blue-light);
+  border: var(--tb-bw-sm) solid var(--tb-border);
+  border-radius: 8px;
+  box-shadow: none;
+  overflow: hidden;
+}
+.progress-bar {
+  background: var(--tb-blue) !important;
+  border-radius: 0;
+}
+.progress-bar::after {
+  content: none;
+}
+.dbd-item-track {
+  height: 8px;
+  border: 1.5px solid var(--tb-border);
+  border-radius: 6px;
+  background: var(--tb-blue-light);
+}
+.dbd-item-bar {
+  background: var(--tb-blue);
+  border-radius: 0;
+}
+
+/* ---------- Bilah navigasi bawah (TabunganBottomBar) ---------- */
+:root body[class][class] .bottom-nav {
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  width: 100% !important;
+  max-width: 500px !important;
+  margin: 0 auto !important;
+  min-height: 68px;
+  padding: 6px 8px calc(6px + env(safe-area-inset-bottom, 0px)) !important;
+  gap: 0;
+  align-items: center;
+  background: var(--tb-surface) !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+  border: var(--tb-bw) solid var(--tb-border) !important;
+  border-bottom: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  z-index: 999999 !important;
+  pointer-events: auto !important;
+}
+.nav-item {
+  gap: 2px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  color: var(--tb-muted);
+  cursor: pointer !important;
+  pointer-events: auto !important;
+  -webkit-tap-highlight-color: transparent;
+}
+.nav-item svg {
+  width: 22px;
+  height: 22px;
+}
+.nav-item span {
+  text-transform: none;
+  letter-spacing: 0;
+  font-size: 0.69rem;
+  font-weight: 600;
+}
+.nav-item.active {
+  color: var(--tb-blue);
+  background: transparent;
+  box-shadow: none;
+}
+.nav-item.active span {
+  color: var(--tb-text);
+  font-weight: 900;
+}
+.nav-item.active svg {
+  color: var(--tb-blue);
+  transform: none;
+}
+.app-container {
+  padding-bottom: calc(112px + env(safe-area-inset-bottom));
+}
+
+/* Toast */
+.custom-toast {
+  bottom: calc(92px + env(safe-area-inset-bottom, 0px));
+  overflow-wrap: anywhere;
+}
+:root body[class][class] .custom-toast {
+  background: var(--tb-surface) !important;
+  color: var(--tb-text);
+  font-weight: 700;
+  border: var(--tb-bw) solid var(--tb-border) !important;
+  border-radius: var(--tb-r-btn) !important;
+  box-shadow: 4px 4px 0 var(--tb-shadow) !important;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+
+/* Gelembung unduhan (mirip FAB bulat di bottom bar) */
+.download-bubble-container {
+  bottom: calc(84px + env(safe-area-inset-bottom, 0px));
+}
+:root body[class][class] .download-bubble-btn {
+  background: var(--tb-blue);
+  color: #fff;
+  border: var(--tb-bw) solid var(--tb-border);
+  box-shadow: var(--tb-off-sm) var(--tb-off-sm) 0 var(--tb-shadow);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+.download-bubble-btn:hover,
+.download-bubble-btn:active {
+  box-shadow: var(--tb-off-sm) var(--tb-off-sm) 0 var(--tb-shadow);
+}
+.db-ring-bg {
+  stroke: rgba(255, 255, 255, 0.35);
+}
+.db-ring-fill {
+  stroke: #fff;
+}
+.db-badge {
+  background: var(--tb-warning);
+  color: #111;
+  border: 2px solid #111;
+  box-shadow: none;
+}
+.dbd-header {
+  border-bottom: var(--tb-bw-sm) solid var(--tb-border);
+  background: var(--tb-blue-light);
+}
+.dbd-count-badge {
+  background: var(--tb-blue);
+  color: #fff;
+  border: 1.5px solid var(--tb-border);
+}
+.dbd-title {
+  font-weight: 900;
+}
+.dbd-item-pill {
+  background: var(--tb-blue);
+  color: #fff;
+  border-radius: 4px;
+}
+.dbd-item.completed {
+  border-color: var(--tb-success) !important;
+}
+.dbd-item.failed {
+  border: 1.5px dashed var(--tb-danger) !important;
+  opacity: 1;
+}
+
+/* ---------- Sakelar ---------- */
+.toggle-switch {
+  width: 52px;
+  height: 30px;
+}
+.toggle-switch label {
+  background-color: var(--tb-surface);
+  border: var(--tb-bw-sm) solid var(--tb-border);
+  border-radius: 999px;
+  box-shadow: 2px 2px 0 var(--tb-shadow);
+}
+.toggle-switch label:before {
+  box-sizing: border-box;
+  height: 20px;
+  width: 20px;
+  left: 2px;
+  bottom: 2px;
+  background: var(--tb-border);
+  border: 0;
+  box-shadow: none;
+}
+.toggle-switch input:checked + label {
+  background-color: var(--tb-blue);
+}
+.toggle-switch input:checked + label:before {
+  background: #fff;
+  border: 0;
+  transform: translateX(22px);
+}
+
+/* ---------- Dropdown ---------- */
+:root body[class][class] .dropdown-menu {
+  background: var(--tb-surface) !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+  border: var(--tb-bw-sm) solid var(--tb-border) !important;
+  border-radius: var(--tb-r-field) !important;
+  box-shadow: 4px 4px 0 var(--tb-shadow) !important;
+}
+.dropdown-item {
+  font-weight: 600;
+}
+.dropdown-item:hover,
+[data-theme="dark"] .dropdown-menu .dropdown-item:hover {
+  background: var(--tb-blue-light);
+}
+
+/* ---------- Dialog & sheet (NeoDialog) ---------- */
+:root body[class][class] .modal-overlay {
+  background: var(--rg-scrim) !important;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+:root body[class][class] :is(
+    .modal-content,
+    .confirm-modal,
+    .quick-action-sheet,
+    .action-sheet,
+    .guide-modal,
+    .pin-modal
+  ) {
+  background: var(--tb-surface) !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+  border: var(--tb-bw) solid var(--tb-border) !important;
+  border-radius: var(--tb-r-card) !important;
+  box-shadow: 6px 6px 0 var(--tb-shadow) !important;
+}
+.modal-overlay {
+  padding: 16px;
+}
+.confirm-body h2 {
+  text-transform: none;
+  letter-spacing: 0;
+  font-size: 1.1rem;
+  font-weight: 900;
+}
+.confirm-body p {
+  font-size: 0.88rem;
+  color: var(--tb-muted);
+}
+.confirm-actions {
+  border-top: var(--tb-bw) solid var(--tb-border) !important;
+}
+.confirm-actions button {
+  font-size: 0.98rem;
+  font-weight: 700;
+  letter-spacing: 0;
+  padding: 15px 12px;
+  color: var(--tb-blue);
+}
+.confirm-actions .cancel-btn {
+  color: var(--tb-text);
+  border-right: var(--tb-bw) solid var(--tb-border) !important;
+}
+.confirm-actions .ok-btn {
+  color: var(--tb-danger);
+  font-weight: 900;
+}
+.confirm-actions .ok-btn.neutral-btn {
+  color: var(--tb-blue);
+}
+.confirm-actions button:hover,
+.confirm-actions button:active,
+.confirm-actions button:focus,
+.confirm-actions button:focus-visible {
+  background-color: var(--tb-blue-light) !important;
+  color: var(--tb-blue) !important;
+}
+.confirm-actions .ok-btn:hover,
+.confirm-actions .ok-btn:active {
+  color: var(--tb-danger) !important;
+  background-color: rgba(255, 77, 77, 0.14) !important;
+}
+.guide-actions button {
+  text-transform: none;
+  letter-spacing: 0;
+  font-size: 0.98rem;
+  font-weight: 700;
+}
+
+/* ---------- Judul halaman & lain-lain ---------- */
+.page-header h2,
+.menu-title,
+.chip span,
+.sub-page-header h3,
+.modal-header h3,
+.stats-label,
+.path-label-sm,
+.dbd-title,
+.item-label,
+.item-label span {
+  text-transform: none !important;
+  letter-spacing: 0 !important;
+}
+.page-header h2 {
+  font-size: 1.9rem;
+  font-weight: 900;
+  letter-spacing: -0.5px !important;
+}
+.sub-page-header h3 {
+  font-weight: 800;
+}
+.menu-title {
+  font-size: 1rem;
+  font-weight: 700;
+}
+.item-label span {
+  font-size: 0.96rem;
+  font-weight: 700;
+}
+.skeleton-line,
+.skeleton-thumb {
+  background-color: var(--tb-blue-light);
+}
+:focus-visible {
+  outline: 3px solid var(--tb-blue);
+  outline-offset: 2px;
+}
+.bg-animation-canvas {
+  opacity: 0.4;
+}
+
+/* Hasil perbandingan gambar (alat kompres) */
+.cmp-handle {
+  background: var(--tb-border);
+  width: 3px;
+  margin-left: -1.5px;
+  box-shadow: none;
+}
+.cmp-handle span {
+  background: var(--tb-blue);
+  color: #fff;
+  border: var(--tb-bw) solid var(--tb-border);
+  box-shadow: var(--tb-off-sm) var(--tb-off-sm) 0 var(--tb-shadow);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+.cmp-tag {
+  background: var(--tb-warning);
+  color: #111;
+  border: 2px solid #111;
+  border-radius: 8px;
+  font-weight: 800;
+}
+
+/* Warna status mengikuti Tabungan */
+.tool-status.error {
+  background: rgba(255, 77, 77, 0.12) !important;
+  border-color: var(--tb-danger) !important;
+}
+.tool-saved {
+  color: var(--tb-success);
+}
