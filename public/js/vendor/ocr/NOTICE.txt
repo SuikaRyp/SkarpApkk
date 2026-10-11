@@ -1,0 +1,5 @@
+Bundled for the OCR Text Scanner (runs fully offline):
+- tesseract-core-*-lstm.wasm.js : tesseract.js-core 7.0.0 (Apache-2.0) - see tesseract-core.LICENSE.txt
+- eng.traineddata, ind.traineddata : tessdata_fast (Apache-2.0), https://github.com/tesseract-ocr/tessdata_fast
+- ocr-worker.js : SKARP's own minimal worker around the core
+QR generation: ../qrcode.mjs - qrcode-generator 2.0.4 by Kazuhiko Arase (MIT), see ../qrcode.LICENSE.txt

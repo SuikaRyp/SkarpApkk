@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [Unreleased]
+
+### Added
+
+- **Tools search bar**: filter every tool by name, description or keyword, with an empty state.
+- **Image Converter**: real JPG/PNG/WebP conversion via canvas, quality slider, optional resize (75/50/25% or max px), before/after file size, Save and Share.
+- **QR Code Generator**: text, link, Wi-Fi (standard `WIFI:` format) and contact (vCard); live preview, colours with a contrast check, Save PNG and Share. Uses the bundled `qrcode-generator` (MIT).
+- **OCR Text Scanner**: fully on-device text recognition (bundled Tesseract WASM core + Indonesian/English data, ~13 MB), editable result, Copy all, Share, Scan again, Cancel. Nothing is uploaded.
+- **JSON Formatter**: format / minify / validate with line and column of the error; numbers and strings keep their exact text.
+- **Color Picker**: tap or drag on a photo to read HEX / RGB / HSL, copy buttons, colour history kept locally.
+
+### Changed
+
+- `MainActivity` now uses `windowSoftInputMode="adjustResize"` so the keyboard does not cover inputs.
+
 ## [4.4.0] - 2026-10-01
 
 ### Added

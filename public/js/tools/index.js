@@ -12,6 +12,7 @@ import {
 import { upscaleImage, compressPdf, removeBackground } from "./ilove.js";
 import { findPresets, clearAmCache } from "./amfinder.js";
 import { createVideoPlayer } from "../components/player.js";
+import { NEW_STRINGS, NEW_TOOL_CARDS, SEARCH_ICONS, newToolPages, mountNewTools } from "./newtools.js";
 
 /* ---------------- strings (en / id; other languages fall back to en) ---------------- */
 const S = {
@@ -180,6 +181,9 @@ const S = {
     "open-video": "Buka video",
   },
 };
+// strings of the newer tools live next to their code (newtools.js)
+Object.assign(S.en, NEW_STRINGS.en);
+Object.assign(S.id, NEW_STRINGS.id);
 const lang = () => (localStorage.getItem("skarp_lang") || "en") === "id" ? "id" : "en";
 const t = (k, vars) => {
   let s = S[lang()][k] ?? S.en[k] ?? k;
@@ -238,16 +242,22 @@ function buildPage() {
   return `
 <div id="toolsMenu">
   <div class="page-header"><h2 data-tt="tools-title"></h2><p data-tt="tools-sub"></p></div>
-  <div class="settings-menu-list tool-list">
+  <div class="tool-input tool-search">
+    <span class="tool-search-icon" aria-hidden="true">${ic(SEARCH_ICONS.search, 20)}</span>
+    <input type="text" id="toolsSearch" data-tt-ph="tools-search-ph" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="search" />
+    <button type="button" class="tool-input-btn hidden" id="toolsSearchClear" data-tt-label="nt-clear-search" aria-label="Clear">${ic(SEARCH_ICONS.close, 20)}</button>
+  </div>
+  <div class="settings-menu-list tool-list" id="toolList">
     ${[
-      ["upscale", "Image Upscale", ICON.up, "up-desc"],
-      ["am", "Preset AM Finder", ICON.am, "am-desc"],
-      ["pdf", "Compress PDF", ICON.pdf, "pdf-desc"],
-      ["bg", "Remove BG", ICON.bg, "bg-desc"],
+      ["upscale", "Image Upscale", ICON.up, "up-desc", "hd upscale foto gambar perbesar image photo enlarge"],
+      ["am", "Preset AM Finder", ICON.am, "am-desc", "alight motion preset tiktok xml"],
+      ["pdf", "Compress PDF", ICON.pdf, "pdf-desc", "pdf compress kompres kecilkan ukuran"],
+      ["bg", "Remove BG", ICON.bg, "bg-desc", "background remove latar hapus transparan png cutout"],
+      ...NEW_TOOL_CARDS,
     ]
       .map(
-        ([id, name, icon, desc]) => `
-    <div class="tool-card" data-tool="${id}" role="button" tabindex="0">
+        ([id, name, icon, desc, kw]) => `
+    <div class="tool-card" data-tool="${id}" data-kw="${kw}" role="button" tabindex="0">
       <div class="menu-icon">${ic(icon)}</div>
       <div class="menu-text"><div class="menu-title">${name}</div><div class="menu-desc" data-tt="${desc}"></div></div>
       <span class="tool-chev">${ic(ICON.chev, 22)}</span>
@@ -255,6 +265,7 @@ function buildPage() {
       )
       .join("")}
   </div>
+  <div class="empty-state tool-empty hidden" id="toolsEmpty"><b data-tt="tools-empty"></b><p data-tt="tools-empty-d"></p></div>
 </div>
 
 ${fileTool({
@@ -299,7 +310,9 @@ ${fileTool({
   pick: "pick-image",
   accept: "image/*",
   run: "bg-run",
-})}`;
+})}
+
+${newToolPages(subHeader)}`;
 }
 
 /* ---------------- helpers ---------------- */
@@ -309,6 +322,38 @@ let root;
 function applyLang() {
   root.querySelectorAll("[data-tt]").forEach((el) => (el.textContent = t(el.dataset.tt)));
   root.querySelectorAll("[data-tt-ph]").forEach((el) => (el.placeholder = t(el.dataset.ttPh)));
+  root.querySelectorAll("[data-tt-label]").forEach((el) => el.setAttribute("aria-label", t(el.dataset.ttLabel)));
+  filterTools();
+}
+
+/* ---------------- search over the tool list (name, description, keywords) ---------------- */
+const normalize = (s) =>
+  String(s || "")
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
+
+function filterTools() {
+  const input = $("toolsSearch");
+  if (!input) return;
+  const words = normalize(input.value).split(/\s+/).filter(Boolean);
+  let visible = 0;
+  root.querySelectorAll("#toolList .tool-card").forEach((card) => {
+    const hay = normalize(
+      [
+        card.querySelector(".menu-title")?.textContent,
+        card.querySelector(".menu-desc")?.textContent,
+        S.en[card.querySelector(".menu-desc")?.dataset.tt],
+        S.id[card.querySelector(".menu-desc")?.dataset.tt],
+        card.dataset.kw,
+      ].join(" "),
+    );
+    const match = words.every((w) => hay.includes(w));
+    card.classList.toggle("hidden", !match);
+    if (match) visible++;
+  });
+  $("toolsEmpty").classList.toggle("hidden", visible > 0);
+  $("toolsSearchClear").classList.toggle("hidden", !input.value);
 }
 
 function setStatus(el, html, kind = "busy") {
@@ -728,6 +773,14 @@ export function initTools() {
     if (card) return openTool(card.dataset.tool);
     if (e.target.closest("[data-tool-back]")) closeActiveTool();
   });
+  $("toolsSearch").addEventListener("input", filterTools);
+  $("toolsSearch").addEventListener("keydown", (e) => e.key === "Enter" && e.target.blur());
+  $("toolsSearchClear").addEventListener("click", () => {
+    const input = $("toolsSearch");
+    input.value = "";
+    filterTools();
+    input.focus();
+  });
   root.addEventListener("keydown", (e) => {
     const card = e.target.closest?.(".tool-card");
     if (card && (e.key === "Enter" || e.key === " ")) {
@@ -791,6 +844,7 @@ export function initTools() {
   });
 
   mountAm();
+  mountNewTools({ t, root });
 }
 
 export { clearAmCache, SAVE_DIR };
